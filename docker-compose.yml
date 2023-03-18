@@ -1,0 +1,41 @@
+version: '2'
+
+services:
+  nginx:
+    image: 'bitnami/nginx:latest'
+    depends_on:
+      - phpfpm
+    networks:
+      - app-tier
+    ports:
+      - '8888:80'
+      - '4433:443'
+    volumes:
+      - ./nginx.conf:/opt/bitnami/nginx/conf/nginx.conf
+      - ./default.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
+        #- ./index.php:/var/www/html/index.php
+  phpfpm:
+    image: 'bitnami/php-fpm:latest'
+    networks:
+      - app-tier
+    volumes:
+      - ./index.php:/var/www/html/index.php
+  phpmyadmin:
+    image: 'bitnami/phpmyadmin:latest'
+    networks:
+      - app-tier
+    ports:
+      - '8081:80'
+      - '9090:443'
+  mysql:
+    image: 'bitnami/mariadb:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - app-tier
+    volumes:
+      - ./db:/bitnami/mysql/data
+
+networks:
+  app-tier:
+    driver: bridge
