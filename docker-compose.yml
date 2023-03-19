@@ -34,13 +34,15 @@ services:
       #- PHPMYADMIN_ALLOW_ARBITRARY_SERVER=TRUE
     restart: unless-stopped
   mysql:
+    env_file:
+      - .env
     image: 'bitnami/mysql:latest'
     hostname: mariabd
     extra_hosts:
       - "mariadb:172.17.0.1"
     environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       #- ALLOW_EMPTY_PASSWORD=yes
-      - MYSQL_ROOT_PASSWORD=password123
     networks:
       - app-tier
     volumes:
