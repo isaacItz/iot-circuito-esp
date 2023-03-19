@@ -8,11 +8,13 @@ services:
     networks:
       - app-tier
     ports:
-      - '8888:80'
-      - '4433:443'
+      - '80:80'
+      - '443:443'
     volumes:
       - ./nginx.conf:/opt/bitnami/nginx/conf/nginx.conf
       - ./default.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
+      - ./certbot-certs:/nginx-persistence/
+      - ./certbot-webroot:/var/www/html
         #- ./index.php:/var/www/html/index.php
     restart: unless-stopped
   phpfpm:
@@ -33,6 +35,14 @@ services:
       - DATABASE_HOST=mysql
       #- PHPMYADMIN_ALLOW_ARBITRARY_SERVER=TRUE
     restart: unless-stopped
+  certbot:
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    command: certonly -v --webroot -w /var/www/html -d mexi.tech -d plex.mexi.tech -m isaac.est.cbtis@gmail.com --agree-tos
+    volumes:
+      - ./certbot-webroot:/var/www/html
+      - ./certbot-certs:/etc/letsencrypt/
   mysql:
     env_file:
       - .env
