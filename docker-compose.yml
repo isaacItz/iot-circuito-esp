@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 
 services:
   nginx:
@@ -14,27 +14,38 @@ services:
       - ./nginx.conf:/opt/bitnami/nginx/conf/nginx.conf
       - ./default.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
         #- ./index.php:/var/www/html/index.php
+    restart: unless-stopped
   phpfpm:
     image: 'bitnami/php-fpm:latest'
     networks:
       - app-tier
     volumes:
-      - ./index.php:/var/www/html/index.php
+      - ./php-files:/var/www/html/
+    restart: unless-stopped
   phpmyadmin:
-    image: 'bitnami/phpmyadmin:latest'
+    image: 'bitnami/phpmyadmin'
     networks:
       - app-tier
     ports:
-      - '8081:80'
-      - '9090:443'
-  mysql:
-    image: 'bitnami/mariadb:latest'
+      - '8081:8080'
+      - '9090:8443'
     environment:
-      - ALLOW_EMPTY_PASSWORD=yes
+      - DATABASE_HOST=mysql
+      #- PHPMYADMIN_ALLOW_ARBITRARY_SERVER=TRUE
+    restart: unless-stopped
+  mysql:
+    image: 'bitnami/mysql:latest'
+    hostname: mariabd
+    extra_hosts:
+      - "mariadb:172.17.0.1"
+    environment:
+      #- ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_ROOT_PASSWORD=password123
     networks:
       - app-tier
     volumes:
       - ./db:/bitnami/mysql/data
+    restart: unless-stopped
 
 networks:
   app-tier:
